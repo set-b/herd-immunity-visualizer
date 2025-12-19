@@ -1,0 +1,71 @@
+import { Scene, Vector3, ArcRotateCamera, HemisphericLight, Color3, HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+import { Platform } from "./meshes/platform";
+import { keyboardInput } from "./input";
+import { createBall } from "./meshes/ball";
+import HavokPhysics from "@babylonjs/havok";
+
+export async function createScene(engine, canvas){
+
+    const scene = new Scene(engine);
+
+    const havokInstance = await HavokPhysics({
+        locateFile: (file) => {
+            if (file.endsWith('.wasm')) {
+                return '/HavokPhysics.wasm';
+            }
+            return file;
+        }
+    });    
+    const havokPlugin = new HavokPlugin(true, havokInstance);
+    scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
+
+    const camera = new ArcRotateCamera(
+        "camera",
+        0,
+        0,
+        15,
+        new Vector3(0,0,0),
+        scene
+    );
+
+    // commented out to prevent users from interacting with camera
+    // camera.attachControl(canvas, true);
+
+    const light = new HemisphericLight(
+        "light",
+        new Vector3(0,1,0),
+        scene
+    );
+
+    light.intensity = 0.5;
+    light.specular = new Color3(0.3,0.3,0.3);
+
+    const platform = new Platform( // need to include rotation limits
+        "platform", // name
+        10, // width
+        10, // height
+        scene, 
+        Math.PI / 6, // rotationalLimitAlpha
+        Math.PI / 6 // rotationalLimitBeta
+    );
+    console.log(platform.position);
+    
+    const keyChecker = keyboardInput(scene);
+
+    const ball = createBall(scene);
+    const ballAggregate = new PhysicsAggregate(
+        ball,
+        PhysicsShapeType.SPHERE,
+        { mass:1, restitution: 0.2, friction: 0.5},
+        scene
+    )
+    ball.position.y = 0.6;
+    
+    scene.onBeforeRenderObservable.add(function() {
+        const deltaTime = engine.getDeltaTime() / 1000;
+        platform.update(keyChecker, deltaTime);
+    })
+
+    return scene;
+}
+
