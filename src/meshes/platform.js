@@ -23,7 +23,7 @@ export class Platform {
         this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
         this.aggregate.body.disablePreStep = false;
         this.platform.rotationQuaternion = 
-        this.platform.rotationQuaternion || BABYLON.Quaternion.Identity();
+        this.platform.rotationQuaternion = this.platform.rotationQuaternion || Quaternion.Identity();
     }
 
     createPlatform(name, width, depth, scene) {
@@ -43,36 +43,18 @@ export class Platform {
         return platform;
     }
 
-    update(keyChecker, deltaTime) {
-    const rotationSpeed = 1;
-    let rotatedX = false;
-    let rotatedZ = false;
+    update(inputManager, deltaTime) {
+        const tiltX = inputManager.getTiltX();
+        const tiltZ = inputManager.getTiltZ();
 
-    // Track current euler angles for limit checking
-    const euler = this.platform.rotationQuaternion.toEulerAngles();
+        // tilt will never be less than -1 or more than 1, thus never exceeds limit
+        const targetRotationX = tiltX * this.rotationLimitAlpha;
+        const targetRotationZ = tiltZ * this.rotationLimitBeta;
 
-    if (keyChecker.isKeyDown("w")) {
-        euler.z += rotationSpeed * deltaTime;
-        rotatedZ = true;
-    }
-    if (keyChecker.isKeyDown("s")) {
-        euler.z -= rotationSpeed * deltaTime;
-        rotatedZ = true;
-    }
-    if (keyChecker.isKeyDown("a")) {
-        euler.x -= rotationSpeed * deltaTime;
-        rotatedX = true;
-    }
-    if (keyChecker.isKeyDown("d")) {
-        euler.x += rotationSpeed * deltaTime;
-        rotatedX = true;
-    }
+        const euler = this.platform.rotationQuaternion.toEulerAngles();
+        euler.x = targetRotationX;
+        euler.z = -1 * targetRotationZ;
 
-    // Apply limits
-    euler.x = Math.max(-this.rotationLimitAlpha, Math.min(this.rotationLimitAlpha, euler.x));
-    euler.z = Math.max(-this.rotationLimitBeta, Math.min(this.rotationLimitBeta, euler.z));
-
-    // Convert back to quaternion
-    this.platform.rotationQuaternion = Quaternion.FromEulerAngles(euler.x, euler.y, euler.z);
-}
+        this.platform.rotationQuaternion = Quaternion.FromEulerAngles(euler.x, euler.y, euler.z);
+    }
 }

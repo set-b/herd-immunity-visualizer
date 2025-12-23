@@ -1,6 +1,6 @@
 import { Scene, Vector3, ArcRotateCamera, HemisphericLight, Color3, HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
 import { Platform } from "./meshes/platform";
-import { keyboardInput } from "./input";
+import { InputManager } from "./input/inputManager";
 import { createBall } from "./meshes/ball";
 import HavokPhysics from "@babylonjs/havok";
 
@@ -49,8 +49,6 @@ export async function createScene(engine, canvas, audioManager){
         Math.PI / 6 // rotationalLimitBeta
     );
     console.log(platform.position);
-    
-    const keyChecker = keyboardInput(scene);
 
     const ball = createBall(scene);
     const ballAggregate = new PhysicsAggregate(
@@ -63,10 +61,13 @@ export async function createScene(engine, canvas, audioManager){
 
     let hasPlayedFallSound = false;
 
+    const inputManager = new InputManager(engine, canvas);
+
     scene.onBeforeRenderObservable.add(function() {
 
         const deltaTime = engine.getDeltaTime() / 1000;
-        platform.update(keyChecker, deltaTime);
+        // inputManager.updateGamepad();
+        platform.update(inputManager, deltaTime);
 
         if (ball.position.y < -5 && hasPlayedFallSound === false){
             audioManager.play("fallSound");
