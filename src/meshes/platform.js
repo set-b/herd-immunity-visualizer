@@ -61,12 +61,23 @@ export class Platform {
             targetRotationZ = -tiltZ * this.rotationLimitBeta;
         }
 
+        /*  because we are moving the platform through physics, additional unintended force may be applied
+            (i.e. through the ball or moving the stick wildly).
+            the clamp values are used for comparison when calculating the diff to ensure that the rotation
+            of the platform will be within the intended rotational limits
+        */ 
         const clampedX = Math.max(-this.rotationLimitAlpha, Math.min(this.rotationLimitAlpha, euler.x));
         const clampedZ = Math.max(-this.rotationLimitBeta, Math.min(this.rotationLimitBeta, euler.z));
 
+        // the diff represents how far the platform's current rotation is from its intended rotation
+        // again, the current rotation is clamped to ensure the state is within bounds
         const diffX = targetRotationX - clampedX;
         const diffZ = targetRotationZ - clampedZ;
 
+        /*  the smaller the difference between the target rotation and current rotation (clamped),
+            the more the platform will decelerate as it reaches the target. this creates for smoother
+            platform movement.
+        */
         const angularSpeed = 50;
         const angularVelocity = new Vector3(
             diffX * angularSpeed,
