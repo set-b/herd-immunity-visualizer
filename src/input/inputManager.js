@@ -1,24 +1,27 @@
-import { DeviceSourceManager, DeviceType, PointerInput, XboxInput } from "@babylonjs/core";
+import { DeviceInputEventType, DeviceSourceManager, DeviceType, FlowGraphBitwiseLeftShiftBlock, PointerInput, XboxInput } from "@babylonjs/core";
 
 export class InputManager { // analyze this code
     constructor(engine, canvas) {
         this.canvas = canvas;
-        this.tiltX = 0;
-        this.tiltZ = 0;
+        this.activeDevice = 'none';
+
+        this.deadZone = 0.2;
 
         this.mouseX = 0;
         this.mouseZ = 0;
-
-        this.gamepadX = 0;
-        this.gamepadZ = 0;
+        this.mouseActive = false;
 
         this.accelX = 0;
         this.accelZ = 0;
+        this.accelActive = false;
+
+        this.gamepadX = 0;
+        this.gamepadZ = 0;
+        this.gamepadActive = false;
 
         this.deviceSourceManager = new DeviceSourceManager(engine);
 
         this._setupMouseInput();
-        this._setupGamepadInput();
         this._setupAccelerometer();
     }
 
@@ -44,30 +47,19 @@ export class InputManager { // analyze this code
 
                     this.mouseX = Math.max(-1, Math.min(1, this.mouseX));
                     this.mouseZ = Math.max(-1, Math.min(1, this.mouseZ));
+
+                    this.mouseActive = true;
+                    this.gamepadActive = false;
+                    this.accelActive = false;
                 });
             }
         });
     }
 
-    _setupGamepadInput() {
-        this.deviceSourceManager.onDeviceConnectedObservable.add((device) => {
+        _setupAccelerometer() { // this one makes the least sense
+            this.accelX = 0; // why is this here instead of the constructor?
+            this.accelZ = 0;
 
-            if (device.deviceType === DeviceType.Xbox) {
-                console.log("Device connected:", device.deviceType);
-                console.log("xbox controller stored");
-
-                device.onInputChangedObservable.add((eventData) => {
-                    // 0 represents horizontal movement with left stick; 1 means vertical 
-                    console.log(eventData);
-                    this.gamepadX = device.getInput(XboxInput.LStickXAxis); // use 0 or 1 to prevent null assignment
-                    this.gamepadZ = device.getInput(XboxInput.LStickYAxis); // might need to add scene.registerbeforerender
-                    console.log(this.gamepadX);
-                })
-            }
-        })
-    }
-
-    _setupAccelerometer() { // this one makes the least sense
         if (typeof DeviceOrientationEvent !== 'undefined'){
             window.addEventListener('deviceorientation', (event) => {
                 // gamma is left-to-right tilt (-90 to 90)
@@ -75,21 +67,101 @@ export class InputManager { // analyze this code
                 if (event.gamma !== null && event.beta !== null){
                     this.accelX = Math.max(-1, Math.min(1, event.gamma / 30));
                     this.accelZ = Math.max(-1, Math.min(1, event.beta / 30));
+
+                    if (Math.abs(this.accelX) > 0.1 || Math.abs(this.accelZ) > 0.1){
+                        this.accelActive = true;
+                        this.mouseActive = false;
+                        this.gamepadActive = false;
+                    }
                 }
             })
         }
     }
 
+    // _getGamepadX() {
+    //     const xbox = this.deviceSourceManager.getDeviceSource(DeviceType.Xbox);
+    //     // if (Math.abs(value))
+    //     if (xbox){
+    //         return xbox.getInput(XboxInput.LStickXAxis) || 0;
+    //     }
+    //     return 0;
+    // }
+
+    // _getGamepadZ() {
+    //     const xbox = this.deviceSourceManager.getDeviceSource(DeviceType.Xbox);
+    //     if (xbox){
+    //         return xbox.getInput(XboxInput.LStickYAxis) || 0;
+    //     }
+    //     return 0;
+    // }
+
+    _updateGamepad() {
+        const xbox = this.deviceSourceManager.getDeviceSource(DeviceType.Xbox);
+        if (xbox) {
+            const x = xbox.getInput(XboxInput.LStickXAxis) || 0;
+            const z = xbox.getInput(XboxInput.LStickYAxis) || 0;
+
+            if (Math.abs(x) > this.deadZone || Math.abs(z) > this.deadZone) {
+                this.gamepadX = x;
+                this.gamepadZ = z;
+                this.gamepadActive = true;
+                this.mouseActive = false;
+                this.accelActive = false;
+            } else if (this.gamepadActive) { // prevents mouse from taking over when releasing the stick
+                this.gamepadX = 0;
+                this.gamepadZ = 0;
+            }
+        }
+    }
+
     getTiltZ() {
-        if (Math.abs(this.gamepadZ) > 0.1) return this.gamepadZ;
-        if (Math.abs(this.accelZ) > 0.1) return this.accelZ;
-        return this.mouseZ;
+
+        this._updateGamepad();
+
+        if (this.gamepadActive) {
+            return this.gamepadZ;
+        }
+
+        if (this.accelActive) {
+            return this.accelZ;
+        }
+
+        if (this.mouseActive) {
+            return this.mouseZ;
+        }
+
+        return 0;
+        // const gamepadZ = this._getGamepadZ();
+        // if (Math.abs(gamepadZ) > this.deadZone) {
+        //     return gamepadZ;
+        // }
+        // if (Math.abs(this.accelZ) > 0.1) return this.accelZ;
+        // return this.mouseZ;
     }
 
     getTiltX() {
-        if (Math.abs(this.gamepadX) > 0.1) return this.gamepadX;
-        if (Math.abs(this.accelX) > 0.1) return this.accelX;
-        return this.mouseX;
+
+        this._updateGamepad();
+
+        if (this.gamepadActive) {
+            return this.gamepadX;
+        }
+
+        if (this.accelActive) {
+            return this.accelX;
+        }
+
+        if (this.mouseActive) {
+            return this.mouseX;
+        }
+
+        return 0;
+        // const gamepadX = this._getGamepadX();
+        // if (Math.abs(gamepadX) > this.deadZone) {
+        //     return gamepadX  
+        // }
+        // if (Math.abs(this.accelX) > 0.1) return this.accelX;
+        // return this.mouseX;
     }
 
     dispose() { // dispose of the devicesourcemanager when the scene is finished

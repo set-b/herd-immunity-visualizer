@@ -1,4 +1,4 @@
-import { MeshBuilder, StandardMaterial, Color3, PhysicsAggregate, PhysicsShapeType, PhysicsMotionType, Quaternion } from "@babylonjs/core";
+import { MeshBuilder, StandardMaterial, Color3, PhysicsAggregate, PhysicsShapeType, PhysicsMotionType, Quaternion, Vector3 } from "@babylonjs/core";
 
 export class Platform {
     constructor(name, width, depth, scene, rotationLimitAlpha, rotationLimitBeta){
@@ -47,14 +47,34 @@ export class Platform {
         const tiltX = inputManager.getTiltX();
         const tiltZ = inputManager.getTiltZ();
 
-        // tilt will never be less than -1 or more than 1, thus never exceeds limit
-        const targetRotationX = tiltX * this.rotationLimitAlpha;
-        const targetRotationZ = tiltZ * this.rotationLimitBeta;
-
         const euler = this.platform.rotationQuaternion.toEulerAngles();
-        euler.x = targetRotationX;
-        euler.z = -1 * targetRotationZ;
 
-        this.platform.rotationQuaternion = Quaternion.FromEulerAngles(euler.x, euler.y, euler.z);
+        let targetRotationX;
+        let targetRotationZ;
+
+        // tilt will never be less than -1 or more than 1, thus never exceeds limit
+        if (Math.abs(tiltX) < 0.1 && Math.abs(tiltZ) < 0.1) {
+            targetRotationX = 0;
+            targetRotationZ = 0;
+        } else {
+            targetRotationX = tiltX * this.rotationLimitAlpha;
+            targetRotationZ = -tiltZ * this.rotationLimitBeta;
+        }
+
+        const clampedX = Math.max(-this.rotationLimitAlpha, Math.min(this.rotationLimitAlpha, euler.x));
+        const clampedZ = Math.max(-this.rotationLimitBeta, Math.min(this.rotationLimitBeta, euler.z));
+
+        const diffX = targetRotationX - clampedX;
+        const diffZ = targetRotationZ - clampedZ;
+
+        const angularSpeed = 50;
+        const angularVelocity = new Vector3(
+            diffX * angularSpeed,
+            -euler.y * angularSpeed, 
+            // applies a corrective, opposite force to euler.y by making it negative, locking the y position of the paltform in place
+            diffZ * angularSpeed
+        );
+
+        this.aggregate.body.setAngularVelocity(angularVelocity);
     }
 }
