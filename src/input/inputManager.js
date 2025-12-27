@@ -78,23 +78,6 @@ export class InputManager { // analyze this code
         }
     }
 
-    // _getGamepadX() {
-    //     const xbox = this.deviceSourceManager.getDeviceSource(DeviceType.Xbox);
-    //     // if (Math.abs(value))
-    //     if (xbox){
-    //         return xbox.getInput(XboxInput.LStickXAxis) || 0;
-    //     }
-    //     return 0;
-    // }
-
-    // _getGamepadZ() {
-    //     const xbox = this.deviceSourceManager.getDeviceSource(DeviceType.Xbox);
-    //     if (xbox){
-    //         return xbox.getInput(XboxInput.LStickYAxis) || 0;
-    //     }
-    //     return 0;
-    // }
-
     _updateGamepad() {
         const xbox = this.deviceSourceManager.getDeviceSource(DeviceType.Xbox);
         if (xbox) {
@@ -131,12 +114,6 @@ export class InputManager { // analyze this code
         }
 
         return 0;
-        // const gamepadZ = this._getGamepadZ();
-        // if (Math.abs(gamepadZ) > this.deadZone) {
-        //     return gamepadZ;
-        // }
-        // if (Math.abs(this.accelZ) > 0.1) return this.accelZ;
-        // return this.mouseZ;
     }
 
     getTiltX() {
@@ -156,12 +133,6 @@ export class InputManager { // analyze this code
         }
 
         return 0;
-        // const gamepadX = this._getGamepadX();
-        // if (Math.abs(gamepadX) > this.deadZone) {
-        //     return gamepadX  
-        // }
-        // if (Math.abs(this.accelX) > 0.1) return this.accelX;
-        // return this.mouseX;
     }
 
     dispose() { // dispose of the devicesourcemanager when the scene is finished
