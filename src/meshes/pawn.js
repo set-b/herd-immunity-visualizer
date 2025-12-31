@@ -4,14 +4,13 @@ import { Color3, Mesh, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { DEFAULT_MERGE_CONFIG } from "../mergeConfig";
 import { BASE_DIMENSIONS, HEAD_DIMENSIONS } from "../pawnDimensions";
 
-export class pawn { // find out vaccinatedOnTurn and infectedOnTurn
-    constructor(scene, immunityLevel, position) {
+export class pawn { // get rid of magic number colors
+    constructor(scene, immunityLevel, position, highlightLayer) {
         this.scene = scene
+        this.highlightLayer = highlightLayer;
         this.immunityLevel = immunityLevel;
         this.healthState = HealthState.HEALTHY;
         this.vaccinated = false;
-        this.vaccinatedOnTurn = null;
-        this.infectedOnTurn = null;
         this.mesh = this.createMesh(position, scene);
     }
 
@@ -46,8 +45,6 @@ export class pawn { // find out vaccinatedOnTurn and infectedOnTurn
             DEFAULT_MERGE_CONFIG.multiMultiMaterials
         );
 
-        // find a way to disable shadows
-
         pawn.position = position;
         this.mesh = pawn;
         this.updateColor();
@@ -56,52 +53,93 @@ export class pawn { // find out vaccinatedOnTurn and infectedOnTurn
 
     updateColor() {
 
+        this.highlightLayer.removeMesh(this.mesh);
+
         const pawnMaterial = new StandardMaterial("pawnMaterial");
 
         switch (this.immunityLevel) {
             case ImmunityLevel.IMMUNOCOMPROMISED:
-                pawnMaterial.diffuseColor = Color3.Yellow;
+                pawnMaterial.diffuseColor = new Color3(255, 255, 0); // yellow
                 break;
         
             case ImmunityLevel.NORMAL:
-                pawnMaterial.diffuseColor = Color3.Blue;
+                pawnMaterial.diffuseColor = new Color3(0, 255, 255); // cyan
                 break;
             
             case ImmunityLevel.RESISTANT:
-                pawnMaterial.diffuseColor = Color3.Green;
+                pawnMaterial.diffuseColor = new Color3(0,255,0); // green
+                break;
 
             default:
                 break;
         }
 
-        // need to work on emissive/glow/outline part, or maybe particle if that's easier
+        if (this.healthState === HealthState.EXPOSED){
+            this.highlightLayer.addMesh(this.mesh, new Color3(1,0.3,0)); // orange highlight
+        }
+
+        if (this.healthState === HealthState.SYMPTOMATIC){
+            pawnMaterial.diffuseColor = new Color3(255,0,0); // red
+        }
+
+        if (this.vaccinated === true &&
+            this.immunityLevel !== ImmunityLevel.RESISTANT
+        ){
+            this.highlightLayer.addMesh(this.mesh, new Color3(0,255,0)); // green highlight
+        }
+
+        if (this.healthState === HealthState.DEAD){
+            pawnMaterial.diffuseColor = new Color3(0.2, 0.2, 0.2); // dark gray
+        }
 
         this.mesh.material = pawnMaterial;
     }
 
-    infect() {
+    expose() { // take argument and use that for the infectedOnTurn value?
         if (this.healthState === HealthState.HEALTHY){
-            this.healthState = HealthState.INFECTED;
+            this.healthState = HealthState.EXPOSED;
         }
-        this.infectedOnTurn = 1 // placeholder for getting data elsewhere
+        this.updateColor();
+    }
+
+    getSick() {
+        if (this.healthState === HealthState.EXPOSED){
+            this.healthState = HealthState.SYMPTOMATIC
+        }
         this.updateColor();
     }
 
     recover() {
-        this.healthState = HealthState.RECOVERED;
-        this.immunityLevel = ImmunityLevel.RESISTANT;
+        if (this.healthState === HealthState.EXPOSED ||
+            this.healthState === HealthState.SYMPTOMATIC
+        ) {
+            this.healthState = HealthState.RECOVERED;
+            this.immunityLevel = ImmunityLevel.RESISTANT;
+        }
+     
         this.updateColor();
     }
 
     die() {
-        this.healthState = HealthState.DEAD;
-        // update color?
-        // move position to other platform?
+        if (this.healthState === HealthState.SYMPTOMATIC){
+            this.healthState = HealthState.DEAD;
+        }
+        this.updateColor();
     }
 
     vaccinate() {
-        this.immunityLevel = ImmunityLevel.RESISTANT;
-        this.vaccinated = true;
-        this.vaccinatedOnTurn = 1 // placeholder for getting data elsewhere
+        if (this.healthState !== HealthState.EXPOSED &&
+            this.healthState !== HealthState.SYMPTOMATIC){
+            this.vaccinated = true;
+        }
+        this.updateColor();
+    }
+
+    gainVaccineImmunity() {
+        if (this.vaccinated === true) {
+            this.healthState = HealthState.HEALTHY;
+            this.immunityLevel = ImmunityLevel.RESISTANT;
+        }
+        this.updateColor();
     }
 }

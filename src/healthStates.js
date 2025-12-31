@@ -1,6 +1,7 @@
 export const HealthState = Object.freeze({
   HEALTHY: "healthy",
-  INFECTED: "infected",
+  EXPOSED: "exposed",
+  SYMPTOMATIC: "symptomatic",
   RECOVERED: "recovered",
   DEAD: "dead"
 });
