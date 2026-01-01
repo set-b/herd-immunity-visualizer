@@ -14,8 +14,8 @@ export async function createScene(engine, canvas, audioManager){
     const camera = new ArcRotateCamera(
         "camera",
         0,
-        0,
-        15,
+        Math.PI / 4,
+        30,
         new Vector3(0,0,0),
         scene
     );

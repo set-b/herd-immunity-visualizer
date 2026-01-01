@@ -1,6 +1,6 @@
 import { ImmunityLevel } from "../constants/immunityLevels";
 import { HealthState } from "../constants/healthStates";
-import { Color3, Mesh, MeshBuilder, StandardMaterial } from "@babylonjs/core";
+import { Mesh, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { DEFAULT_MERGE_CONFIG } from "../constants/mergeConfig";
 import { BASE_DIMENSIONS, HEAD_DIMENSIONS } from "../constants/pawnDimensions";
 import { COLORS, HIGHLIGHTS } from "../constants/colorPalette";

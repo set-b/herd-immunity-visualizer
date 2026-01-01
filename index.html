@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herd Immunity Visualizer</title>
-    <style>
+    <!-- <style>
         html,
         body {
             overflow: hidden;
@@ -18,7 +18,8 @@
             width: 100%;
             touch-action: none;
         }
-    </style>
+    </style> -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
@@ -26,6 +27,7 @@
         <div id="play-pause-reset">
             <button>play/pause</button>
             <button>reset</button>
+            <label for="speed-dropdown">Speed:</label>
             <select name="speed" id="speed-dropdown">
                 <option value="0.5">0.5x</option>
                 <option value="1">1x</option>
@@ -58,7 +60,7 @@
                     <span id="infection-rate-value">5%</span>
                 </li>
                 <li>
-                    <label for="population-size">Population Size:</label>
+                    <label for="population-size">Population Size (max 200):</label>
                     <input type="number" id="population-size" min="10" max="200" value="50"> 
                 </li>
             </ul>
