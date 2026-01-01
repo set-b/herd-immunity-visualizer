@@ -3,6 +3,7 @@ import { HealthState } from "../healthStates";
 import { Color3, Mesh, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { DEFAULT_MERGE_CONFIG } from "../mergeConfig";
 import { BASE_DIMENSIONS, HEAD_DIMENSIONS } from "../pawnDimensions";
+import { COLORS, HIGHLIGHTS } from "../colorPalette";
 
 export class pawn { // get rid of magic number colors
     constructor(scene, immunityLevel, position, highlightLayer) {
@@ -59,15 +60,18 @@ export class pawn { // get rid of magic number colors
 
         switch (this.immunityLevel) {
             case ImmunityLevel.IMMUNOCOMPROMISED:
-                pawnMaterial.diffuseColor = new Color3(255, 255, 0); // yellow
+                // pawnMaterial.diffuseColor = new Color3(255, 255, 0); // yellow
+                pawnMaterial.diffuseColor = COLORS.YELLOW;
                 break;
         
             case ImmunityLevel.NORMAL:
-                pawnMaterial.diffuseColor = new Color3(0, 255, 255); // cyan
+                // pawnMaterial.diffuseColor = new Color3(0, 255, 255); // cyan
+                pawnMaterial.diffuseColor = COLORS.CYAN;
                 break;
             
             case ImmunityLevel.RESISTANT:
-                pawnMaterial.diffuseColor = new Color3(0,255,0); // green
+                // pawnMaterial.diffuseColor = new Color3(0,255,0); // green
+                pawnMaterial.diffuseColor = COLORS.GREEN;
                 break;
 
             default:
@@ -75,21 +79,25 @@ export class pawn { // get rid of magic number colors
         }
 
         if (this.healthState === HealthState.EXPOSED){
-            this.highlightLayer.addMesh(this.mesh, new Color3(1,0.3,0)); // orange highlight
+            // this.highlightLayer.addMesh(this.mesh, new Color3(1,0.3,0)); // orange highlight
+            this.highlightLayer.addMesh(this.mesh, HIGHLIGHTS.ORANGE);
         }
 
         if (this.healthState === HealthState.SYMPTOMATIC){
-            pawnMaterial.diffuseColor = new Color3(255,0,0); // red
+            // pawnMaterial.diffuseColor = new Color3(255,0,0); // red
+            pawnMaterial.diffuseColor = COLORS.RED;
         }
 
         if (this.vaccinated === true &&
             this.immunityLevel !== ImmunityLevel.RESISTANT
         ){
-            this.highlightLayer.addMesh(this.mesh, new Color3(0,255,0)); // green highlight
+            // this.highlightLayer.addMesh(this.mesh, new Color3(0,255,0)); // green highlight
+            this.highlightLayer.addMesh(this.mesh, HIGHLIGHTS.GREEN);
         }
 
         if (this.healthState === HealthState.DEAD){
-            pawnMaterial.diffuseColor = new Color3(0.2, 0.2, 0.2); // dark gray
+            // pawnMaterial.diffuseColor = new Color3(0.2, 0.2, 0.2); // dark gray
+            pawnMaterial.diffuseColor = COLORS.DARK_GRAY;
         }
 
         this.mesh.material = pawnMaterial;
