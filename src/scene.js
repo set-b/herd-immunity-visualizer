@@ -4,8 +4,8 @@ import { InputManager } from "./input/inputManager";
 import { createBall } from "./meshes/ball";
 import HavokPhysics from "@babylonjs/havok";
 import { pawn } from "./meshes/pawn";
-import { ImmunityLevel } from "./immunityLevels";
-import { HealthState } from "./healthStates";
+import { ImmunityLevel } from "./constants/immunityLevels";
+import { HealthState } from "./constants/healthStates";
 
 export async function createScene(engine, canvas, audioManager){
 
