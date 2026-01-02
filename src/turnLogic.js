@@ -15,31 +15,38 @@ export function validatePopulationSize() {
     return isValid;
 }
 
-export function spawnPawns(scene) { // look at this again
+export function spawnPawns(scene, highlightLayer) { // look at this again
     // might turn this whole file into a class to instantiate with scene as part of constructor method
     // could call it gameLogicHandler.js
     // might not be necessary to export every function?
-    const pawnArray = [];
-    for (let index = 0; index < UISTATE.POPULATION_SIZE; index++) {
-    // need to calculate odds for immunity level and calculate position along "grid"
 
+    const pawnsPerRow = Math.ceil(Math.sqrt(UISTATE.POPULATION_SIZE));
     const spacing = 2;
-    const pawnsPerRow = Math.ceil(Math.sqrt(populationSize));
 
-    const row = Math.floor(i / pawnsPerRow);
-    const col = i % pawnsPerRow;
-    
-    const x = (col - pawnsPerRow / 2) * spacing;
-    const z = (row - pawnsPerRow / 2) * spacing;
-    
-    const position = new Vector3(x, 0, z);
-    // create pawn at position
+    const pawnArray = [];
+    const totalPawns = UISTATE.POPULATION_SIZE;
+    let pawnCounter = 0;
 
-        pawnArray[index] = new pawn(
-            scene,
-            determineInitialImmunityLevel(pawnStatusCalculation(UISTATE.IMMUNOCOMPROMISED_RATE)),
-            position        
-        );
+    for (let row = 0; row < pawnsPerRow && pawnCounter < totalPawns; row++) {
+
+        pawnArray[row] = [];
+
+        for (let col = 0; col < pawnsPerRow && pawnCounter < totalPawns; col++){
+
+            const x = (col - pawnsPerRow / 2) * spacing; // columns are horizontal
+            const z = (row - pawnsPerRow / 2) * spacing; // rows are vertical
+    
+            const position = new Vector3(x, 0, z);
+
+            pawnArray[row][col] = new pawn(
+                scene,
+                determineInitialImmunityLevel(pawnStatusCalculation(UISTATE.IMMUNOCOMPROMISED_RATE)),
+                position,
+                highlightLayer
+            );
+
+            pawnCounter++;
+        }
     }
 
     return pawnArray;
@@ -63,8 +70,8 @@ export function determineInitialImmunityLevel(calculation) {
 
 export function pickPatientZero(pawnArray){
 
-    const patientZero = Math.floor(Math.random() * pawnArray.length) + 1;
-    pawnArray[patientZero].healthState = HealthState.EXPOSED;    
+    const patientZeroIndex = Math.floor(Math.random() * pawnArray.length);
+    pawnArray[patientZeroIndex].healthState = HealthState.EXPOSED;    
 
     return;
 }
@@ -77,27 +84,100 @@ export function startGame(scene) {
     const pawns = spawnPawns(scene);
     pickPatientZero(pawns);
 
-    let simulationRunning = true;
-    while(simulationRunning){ // maybe look at onObservable instead! might not need this!
-        // maybe put time here for speed to wait between turns
-        // according to speed
-        executeTurn(pawns);
+    //onbeforerenderobservable or something to run executeTurn?
+}
+
+export function executeTurn(pawnArray){ // put this in observable?
+    // need to add delay when symptoms onset.
+    const immunocompromisedModifier = 0.2;
+
+    for (let row = 0; row < pawnArray.length; row++){
+        for(let col = 0; col < pawnArray[row].length; col++){
+            const pawn = pawnArray[row][col];
+            
+            if (pawn === undefined) continue;
+
+            if (pawn.healthState === HealthState.EXPOSED ||
+                pawn.healthState === HealthState.SYMPTOMATIC
+            ){
+                updateNeighboringPawns(pawnArray, row, col);
+
+                if (pawn.healthState === HealthState.EXPOSED){
+                    // check if it gets infected
+                    if (pawnStatusCalculation(UISTATE.INFECTION_RATE)){
+                        pawn.getSick();
+                    }
+                }
+
+                if (pawn.healthState === HealthState.SYMPTOMATIC){
+                    // check if it dies or recovers
+                    if (pawn.immunityLevel === ImmunityLevel.IMMUNOCOMPROMISED){
+                        if (pawnStatusCalculation(UISTATE.FATALITY_RATE + immunocompromisedModifier)){
+                            pawn.die();
+                        } else {
+                            pawn.recover();
+                        }
+                    } else {
+                        if (pawnStatusCalculation(UISTATE.FATALITY_RATE)){
+                            pawn.die();
+                        }
+                        else {
+                            pawn.recover();
+                        }
+                    }
+                }
+
+                if (pawn.healthState === HealthState.HEALTHY) {
+                if (pawn.vaccinated){
+                       pawn.gainVaccineImmunity();
+                } else {
+                    if (pawnStatusCalculation(UISTATE.VACCINATION_RATE)){
+                        pawn.vaccinate();
+                    }
+                }
+            }
+            }
+        }
+    }
+
+    // still need to update counts, day/turn, etc.
+    updateCounts(); // will probably iterate flat throught the array and set counters to update UISTATE variables
+    UISTATE.DAY++;
+    // need to run this in observable or something****
+}
+
+export function updateNeighboringPawns(pawnArray, row, col){
+    const directions = [
+        [-1,0], [1,0], [0,-1], [0,1],
+        [-1,-1], [-1,1], [1, -1], [1,1]
+    ];
+
+    for (const [r, c] of directions){
+        const neighborRow = row + r;
+        const neighborColumn = col + c;
+
+        // check that it's not out of bounds
+        if (neighborRow >= 0 && neighborRow < pawnArray.length &&
+            neighborColumn >= 0 && neighborColumn < pawnArray[neighborRow].length
+        ) {
+            const neighboringPawn = pawnArray[neighborRow][neighborColumn];
+            if (neighboringPawn !== undefined){
+                if (neighboringPawn.healthState === HealthState.HEALTHY){
+                    // add nuance based on pawn statuses
+                    const cannotBeInfected = (neighboringPawn.healthState === HealthState.RECOVERED ||
+                        neighboringPawn.immunityLevel === ImmunityLevel.RESISTANT
+                    );
+
+                    if (pawnStatusCalculation(UISTATE.INFECTION_RATE) && cannotBeInfected === false) {
+                        neighboringPawn.healthState = HealthState.EXPOSED;
+                    }
+                }
+            }
+        }
+
     }
 }
 
-export function executeTurn(pawns){
-    // go through array and check for exposed or symptomatic
-    const infected = pawns.filter(pawn => 
-        pawn.HealthState === HealthState.EXPOSED ||
-        pawn.healthState === HealthState.SYMPTOMATIC
-    );
-    // might need to get indices of these instead of the pawns themselves
-    // use the indices to find the adjacent pawns (all 8 directions)
-
-    // left and right pawn
-    for (let index = 0; index < infected.length; index++) {
-        const infectedPawn = infected[index];
-        
-        
-    }
+function updateCounts() {
+    // update the counts in the UISTATE file here
 }
