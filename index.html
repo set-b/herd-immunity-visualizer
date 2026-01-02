@@ -3,34 +3,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Herd Immunity Visualizer</title>
-    <!-- <style>
-        html,
-        body {
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        #renderCanvas {
-            height: 100%;
-            width: 100%;
-            touch-action: none;
-        }
-    </style> -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
     <div id="ui-panel">
         <div id="play-pause-reset">
-            <button>play/pause</button>
-            <button>reset</button>
+            <button id="play-pause">play/pause</button>
+            <button id="reset">reset</button>
             <label for="speed-dropdown">Speed:</label>
             <select name="speed" id="speed-dropdown">
                 <option value="0.5">0.5x</option>
-                <option value="1">1x</option>
+                <option value="1" selected>1x</option>
                 <option value="1.5">1.5x</option>
                 <option value="2">2x</option>
             </select>
@@ -47,21 +31,21 @@
                 <li>
                     <label for="vaccination-rate">Vaccination Rate:</label>
                     <input type="range" id="vaccination-rate" min="0" max="100" value="30">
-                    <span id="infection-rate-value">30%</span>
+                    <span id="vaccination-rate-value">30%</span>
                 </li>
                 <li>
                     <label for="fatality-rate">Fatality Rate:</label>
                     <input type="range" id="fatality-rate" min="0" max="100" value="10">
-                    <span id="infection-rate-value">10%</span>
+                    <span id="fatality-rate-value">10%</span>
                 </li>
                 <li>
                     <label for="immunocomprised-rate">Immunocompromised Rate:</label>
-                    <input type="range" id="immunocopromised-rate" min="0" max="100" value="5">
-                    <span id="infection-rate-value">5%</span>
+                    <input type="range" id="immunocompromised-rate" min="0" max="100" value="5">
+                    <span id="immunocompromised-rate-value">5%</span>
                 </li>
                 <li>
                     <label for="population-size">Population Size (max 200):</label>
-                    <input type="number" id="population-size" min="10" max="200" value="50"> 
+                    <input type="number" id="population-size" value="50"> 
                 </li>
             </ul>
         </div>

@@ -6,6 +6,7 @@ import HavokPhysics from "@babylonjs/havok";
 import { pawn } from "./meshes/pawn";
 import { ImmunityLevel } from "./constants/immunityLevels";
 import { HealthState } from "./constants/healthStates";
+import { initUIListeners } from "./uiState";
 
 export async function createScene(engine, canvas, audioManager){
 
@@ -36,6 +37,8 @@ export async function createScene(engine, canvas, audioManager){
 
     const testPawn = new pawn(scene, ImmunityLevel.IMMUNOCOMPROMISED, new Vector3(0,0,0), highlightLayer);
 
+    initUIListeners();
+        
     scene.onBeforeRenderObservable.add(function() {
 
     });
