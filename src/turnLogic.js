@@ -127,7 +127,9 @@ export function executeTurn(pawnArray){ // put this in observable?
                     }
                 }
 
-                if (pawn.healthState === HealthState.HEALTHY) {
+                
+            }
+            if (pawn.healthState === HealthState.HEALTHY) {
                 if (pawn.vaccinated){
                        pawn.gainVaccineImmunity();
                 } else {
@@ -135,7 +137,6 @@ export function executeTurn(pawnArray){ // put this in observable?
                         pawn.vaccinate();
                     }
                 }
-            }
             }
         }
     }
