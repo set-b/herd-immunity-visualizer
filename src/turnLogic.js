@@ -1,4 +1,4 @@
-import { UISTATE } from "./uiState";
+import { UISTATE, updateDayDisplay, updateStatsDisplay } from "./uiState";
 import { pawn } from "./meshes/pawn";
 import { ImmunityLevel } from "./constants/immunityLevels";
 import { HealthState } from "./constants/healthStates";
@@ -71,17 +71,17 @@ export function determineInitialImmunityLevel(calculation) {
 export function pickPatientZero(pawnArray){
 
     const patientZeroIndex = Math.floor(Math.random() * pawnArray.length);
-    pawnArray[patientZeroIndex].healthState = HealthState.EXPOSED;    
+    pawnArray[patientZeroIndex][patientZeroIndex].expose();   
 
     return;
 }
 
-export function startGame(scene) {
+export function startGame(scene, highlightLayer) {
     if (validatePopulationSize() === false){
         return;
     }
 
-    const pawns = spawnPawns(scene);
+    const pawns = spawnPawns(scene, highlightLayer);
     pickPatientZero(pawns);
 
     //onbeforerenderobservable or something to run executeTurn?
@@ -142,12 +142,11 @@ export function executeTurn(pawnArray){ // put this in observable?
     }
 
     // still need to update counts, day/turn, etc.
-    updateCounts(); // will probably iterate flat throught the array and set counters to update UISTATE variables
-    UISTATE.DAY++;
+    updateCounts(pawnArray); // will probably iterate flat throught the array and set counters to update UISTATE variables
     // need to run this in observable or something****
 }
 
-export function updateNeighboringPawns(pawnArray, row, col){
+export function updateNeighboringPawns(pawnArray, row, col){ // CHECK THIS!!!
     const directions = [
         [-1,0], [1,0], [0,-1], [0,1],
         [-1,-1], [-1,1], [1, -1], [1,1]
@@ -179,6 +178,52 @@ export function updateNeighboringPawns(pawnArray, row, col){
     }
 }
 
-function updateCounts() {
+function updateCounts(pawnArray) {
     // update the counts in the UISTATE file here
+    const counts = {
+        normal: 0,
+        immunocompromised: 0,
+        exposed: 0,
+        infected: 0,
+        resistant: 0,
+        dead: 0
+    };
+
+    const flatArray = pawnArray.flat();
+    // for loop on all pawns to check statuses
+    for (let index = 0; index < flatArray.length; index++) {
+        const pawn = flatArray[index];
+        
+        switch (pawn.healthState) {
+            case HealthState.EXPOSED:
+                counts.exposed++;
+                break;
+            case HealthState.SYMPTOMATIC:
+                counts.infected++;
+                break;
+            case HealthState.DEAD:
+                counts.dead++;
+                break;
+            default:
+                break;
+        }
+
+        switch (pawn.immunityLevel) {
+            case ImmunityLevel.IMMUNOCOMPROMISED:
+                counts.immunocompromised++;
+                break;
+            case ImmunityLevel.NORMAL:
+                counts.normal++;
+                break;
+            case ImmunityLevel.RESISTANT:
+                counts.resistant++;
+            default:
+                break;
+        }
+    }
+
+    updateStatsDisplay(counts);
+    updateDayDisplay(UISTATE.DAY++);
 }
+
+// TODO: updateCounts, make sure logic works, somehow get it to run in onbeforerenderobservable or something
