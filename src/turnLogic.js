@@ -2,6 +2,8 @@ import { UISTATE, updateDayDisplay, updateStatsDisplay } from "./uiState";
 import { pawn } from "./meshes/pawn";
 import { ImmunityLevel } from "./constants/immunityLevels";
 import { HealthState } from "./constants/healthStates";
+import { Vector3 } from "@babylonjs/core";
+import { pawnArrayState } from "./constants/pawnArrayState";
 
 export function validatePopulationSize() {
     let isValid = true;
@@ -70,8 +72,9 @@ export function determineInitialImmunityLevel(calculation) {
 
 export function pickPatientZero(pawnArray){
 
-    const patientZeroIndex = Math.floor(Math.random() * pawnArray.length);
-    pawnArray[patientZeroIndex][patientZeroIndex].expose();   
+    const patientZeroIndexRow = Math.floor(Math.random() * pawnArray.length);
+    const patientZeroIndexCol = Math.floor(Math.random() * pawnArray[patientZeroIndexRow].length);
+    pawnArray[patientZeroIndexRow][patientZeroIndexCol].expose();   
 
     return;
 }
@@ -81,10 +84,14 @@ export function startGame(scene, highlightLayer) {
         return;
     }
 
-    const pawns = spawnPawns(scene, highlightLayer);
-    pickPatientZero(pawns);
+    if (pawnArrayState.PAWN_ARRAY === null){
+        const pawns = spawnPawns(scene, highlightLayer);
+        pickPatientZero(pawns);
 
-    //onbeforerenderobservable or something to run executeTurn?
+        UISTATE.PAUSE = false;
+    
+        pawnArrayState.PAWN_ARRAY = pawns;
+    }
 }
 
 export function executeTurn(pawnArray){ // put this in observable?
@@ -163,12 +170,8 @@ export function updateNeighboringPawns(pawnArray, row, col){ // CHECK THIS!!!
             const neighboringPawn = pawnArray[neighborRow][neighborColumn];
             if (neighboringPawn !== undefined){
                 if (neighboringPawn.healthState === HealthState.HEALTHY){
-                    // add nuance based on pawn statuses
-                    const cannotBeInfected = (neighboringPawn.healthState === HealthState.RECOVERED ||
-                        neighboringPawn.immunityLevel === ImmunityLevel.RESISTANT
-                    );
-
-                    if (pawnStatusCalculation(UISTATE.INFECTION_RATE) && cannotBeInfected === false) {
+                    if (pawnStatusCalculation(UISTATE.INFECTION_RATE) && 
+                        neighboringPawn.immunityLevel !== ImmunityLevel.RESISTANT) {
                         neighboringPawn.healthState = HealthState.EXPOSED;
                     }
                 }

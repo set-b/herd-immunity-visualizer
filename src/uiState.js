@@ -1,6 +1,9 @@
+import { startGame } from "./turnLogic";
+import { reset } from "./constants/pawnArrayState";
+
 export const UISTATE = {
     PAUSE: true,
-    RESET: false,
+    // RESET: false,
     SPEED: 1,
     INFECTION_RATE: 50,
     VACCINATION_RATE: 30,
@@ -10,7 +13,7 @@ export const UISTATE = {
     DAY: 0
 };
 
-export function initUIListeners() {
+export function initUIListeners(scene, highlightLayer) {
     const infection_slider = document.getElementById('infection-rate');
 
     // still dont know what onStart does
@@ -18,9 +21,9 @@ export function initUIListeners() {
     play_pause_button.addEventListener('click', () => {
         UISTATE.PAUSE = !UISTATE.PAUSE;
         play_pause_button.textContent = UISTATE.PAUSE ? 'Play' : 'Pause';
-        if (!UISTATE.PAUSE && onStart) //onstart?
+        if (!UISTATE.PAUSE) //onstart?
         {
-            // startGame;
+            startGame(scene, highlightLayer);
         } 
     });
 
@@ -30,9 +33,7 @@ export function initUIListeners() {
         UISTATE.PAUSE = true;
         UISTATE.DAY = 0;
         play_pause_button.textContent = 'Play';
-        if (onReset) { // what is onreset?
-            // reset game
-        }
+        reset();
     })
 
     const speed_dropdown = document.getElementById('speed-dropdown');

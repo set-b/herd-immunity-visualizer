@@ -6,7 +6,8 @@ import HavokPhysics from "@babylonjs/havok";
 import { pawn } from "./meshes/pawn";
 import { ImmunityLevel } from "./constants/immunityLevels";
 import { HealthState } from "./constants/healthStates";
-import { initUIListeners } from "./uiState";
+import { initUIListeners, UISTATE } from "./uiState";
+import { executeTurn } from "./turnLogic";
 
 export async function createScene(engine, canvas, audioManager){
 
@@ -35,12 +36,24 @@ export async function createScene(engine, canvas, audioManager){
 
     const highlightLayer = new HighlightLayer("highlightLayer", scene);
 
-    const testPawn = new pawn(scene, ImmunityLevel.IMMUNOCOMPROMISED, new Vector3(0,0,0), highlightLayer);
+    // const testPawn = new pawn(scene, ImmunityLevel.IMMUNOCOMPROMISED, new Vector3(0,0,0), highlightLayer);
 
     initUIListeners();
-        
-    scene.onBeforeRenderObservable.add(function() {
+    
+    let lastTurnTime = 0;
 
+    // where to get pawnArray?
+    scene.onBeforeRenderObservable.add(() => {
+
+        if (UISTATE.PAUSE) return;
+       
+        const now = performance.now();
+        const timeDelay = 5000 / UISTATE.SPEED;
+
+        if (now - lastTurnTime > timeDelay){
+            executeTurn(pawnArray);
+            lastTurnTime = now;
+        }
     });
 
     return scene;
