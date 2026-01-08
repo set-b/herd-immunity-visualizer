@@ -8,6 +8,7 @@ import { ImmunityLevel } from "./constants/immunityLevels";
 import { HealthState } from "./constants/healthStates";
 import { initUIListeners, UISTATE } from "./uiState";
 import { executeTurn } from "./turnLogic";
+import { pawnArrayState } from "./constants/pawnArrayState";
 
 export async function createScene(engine, canvas, audioManager){
 
@@ -38,20 +39,20 @@ export async function createScene(engine, canvas, audioManager){
 
     // const testPawn = new pawn(scene, ImmunityLevel.IMMUNOCOMPROMISED, new Vector3(0,0,0), highlightLayer);
 
-    initUIListeners();
+    initUIListeners(scene, highlightLayer);
     
     let lastTurnTime = 0;
 
     // where to get pawnArray?
     scene.onBeforeRenderObservable.add(() => {
 
-        if (UISTATE.PAUSE) return;
+        if (UISTATE.PAUSE || pawnArrayState.PAWN_ARRAY === null) return;
        
         const now = performance.now();
         const timeDelay = 5000 / UISTATE.SPEED;
 
         if (now - lastTurnTime > timeDelay){
-            executeTurn(pawnArray);
+            executeTurn(pawnArrayState.PAWN_ARRAY);
             lastTurnTime = now;
         }
     });

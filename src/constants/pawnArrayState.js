@@ -1,6 +1,3 @@
-import { UISTATE } from "../uiState";
-import { Mesh } from "@babylonjs/core";
-
 export const pawnArrayState = Object.freeze({
     PAWN_ARRAY: null
 });
