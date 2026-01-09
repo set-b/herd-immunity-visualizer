@@ -1,6 +1,6 @@
-export const pawnArrayState = Object.freeze({
+export const pawnArrayState = {
     PAWN_ARRAY: null
-});
+};
 
 // remove this from this file
 export function reset() { // triggered by UISTATE.RESET in event listener in uiState.js

@@ -94,7 +94,7 @@ export function updateStatsDisplay(counts) {
     exposed_counter.textContent = counts.exposed;
 
     const symptomatic_counter = document.getElementById('symptomatic-count');
-    symptomatic_counter.textContent = counts.symptomatic;
+    symptomatic_counter.textContent = counts.infected;
 
     const dead_counter = document.getElementById('dead-count');
     dead_counter.textContent = counts.dead;

@@ -148,9 +148,7 @@ export function executeTurn(pawnArray){ // put this in observable?
         }
     }
 
-    // still need to update counts, day/turn, etc.
-    updateCounts(pawnArray); // will probably iterate flat throught the array and set counters to update UISTATE variables
-    // need to run this in observable or something****
+    updateCounts(pawnArray);
 }
 
 export function updateNeighboringPawns(pawnArray, row, col){ // CHECK THIS!!!
@@ -172,7 +170,7 @@ export function updateNeighboringPawns(pawnArray, row, col){ // CHECK THIS!!!
                 if (neighboringPawn.healthState === HealthState.HEALTHY){
                     if (pawnStatusCalculation(UISTATE.INFECTION_RATE) && 
                         neighboringPawn.immunityLevel !== ImmunityLevel.RESISTANT) {
-                        neighboringPawn.healthState = HealthState.EXPOSED;
+                        neighboringPawn.expose();
                     }
                 }
             }
@@ -226,7 +224,8 @@ function updateCounts(pawnArray) {
     }
 
     updateStatsDisplay(counts);
-    updateDayDisplay(UISTATE.DAY++);
+    let day = UISTATE.DAY + 1;
+    updateDayDisplay(day);
 }
 
 // TODO: updateCounts, make sure logic works, somehow get it to run in onbeforerenderobservable or something

@@ -12,7 +12,6 @@ export class pawn {
         this.immunityLevel = immunityLevel;
         this.healthState = HealthState.HEALTHY;
         this.vaccinated = false;
-        // this.spawnCoordinates = spawnCoordinates;
         this.mesh = this.createMesh(position, scene);
     }
 
