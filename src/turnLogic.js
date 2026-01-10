@@ -103,6 +103,11 @@ export function executeTurn(pawnArray){ // put this in observable?
             const pawn = pawnArray[row][col];
             
             if (pawn === undefined) continue;
+            if (pawn.healthState === HealthState.DEAD) {
+                console.log('updating color of dead pawn');
+                pawn.updateColor();
+                continue;
+            }
 
             if (pawn.healthState === HealthState.EXPOSED ||
                 pawn.healthState === HealthState.SYMPTOMATIC
@@ -110,13 +115,12 @@ export function executeTurn(pawnArray){ // put this in observable?
                 updateNeighboringPawns(pawnArray, row, col);
 
                 if (pawn.healthState === HealthState.EXPOSED){
-                    // check if it gets infected
                     if (pawnStatusCalculation(UISTATE.INFECTION_RATE)){
-                        pawn.getSick();
+                        pawn.getSick(); //why is this yellow?
                     }
                 }
 
-                if (pawn.healthState === HealthState.SYMPTOMATIC){
+                else if (pawn.healthState === HealthState.SYMPTOMATIC){
                     // check if it dies or recovers
                     if (pawn.immunityLevel === ImmunityLevel.IMMUNOCOMPROMISED){
                         if (pawnStatusCalculation(UISTATE.FATALITY_RATE + immunocompromisedModifier)){

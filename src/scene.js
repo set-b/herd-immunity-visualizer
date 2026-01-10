@@ -43,18 +43,31 @@ export async function createScene(engine, canvas, audioManager){
     
     let lastTurnTime = 0;
 
+
+
     // where to get pawnArray?
     scene.onBeforeRenderObservable.add(() => {
+
+        // const exposed_counter = parseInt(document.getElementById('exposed-count').textContent);
+        // const symptomatic_counter = parseInt(document.getElementById('symptomatic-count').textContent);
 
         if (UISTATE.PAUSE || pawnArrayState.PAWN_ARRAY === null) return;
        
         const now = performance.now();
         const timeDelay = 5000 / UISTATE.SPEED;
+        // let pandemicUnderway = (exposed_counter > 0 || 
+            // symptomatic_counter > 0);
 
-        if (now - lastTurnTime > timeDelay){
+        if (now - lastTurnTime > timeDelay) {  
+            // && pandemicUnderway){
             executeTurn(pawnArrayState.PAWN_ARRAY);
             lastTurnTime = now;
         }
+        // else {
+        //     const endSimulationText = document.getElementById('simulation-ended');
+        //     endSimulationText.style.display = 'block';
+        //     UISTATE.PAUSE = true;
+        // }
     });
 
     return scene;
