@@ -74,7 +74,9 @@ export function pickPatientZero(pawnArray){
 
     const patientZeroIndexRow = Math.floor(Math.random() * pawnArray.length);
     const patientZeroIndexCol = Math.floor(Math.random() * pawnArray[patientZeroIndexRow].length);
-    pawnArray[patientZeroIndexRow][patientZeroIndexCol].expose();   
+    pawnArray[patientZeroIndexRow][patientZeroIndexCol].expose();
+    
+    updateCounts(pawnArray);
 
     return;
 }
@@ -92,6 +94,8 @@ export function startGame(scene, highlightLayer) {
     
         pawnArrayState.PAWN_ARRAY = pawns;
     }
+
+    UISTATE.GAME_STARTED = true;
 }
 
 export function executeTurn(pawnArray){ // put this in observable?
@@ -104,7 +108,6 @@ export function executeTurn(pawnArray){ // put this in observable?
             
             if (pawn === undefined) continue;
             if (pawn.healthState === HealthState.DEAD) {
-                console.log('updating color of dead pawn');
                 pawn.updateColor();
                 continue;
             }

@@ -90,6 +90,7 @@ export class pawn {
         }
 
         if (this.healthState === HealthState.DEAD){
+            this.highlightLayer.removeMesh(this.mesh);
             pawnMaterial.diffuseColor = COLORS.DARK_GRAY;
         }
 

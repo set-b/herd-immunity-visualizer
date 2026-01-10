@@ -3,14 +3,14 @@ import { reset } from "./constants/pawnArrayState";
 
 export const UISTATE = {
     PAUSE: true,
-    // RESET: false,
     SPEED: 1,
     INFECTION_RATE: 50,
     VACCINATION_RATE: 30,
     FATALITY_RATE: 10,
     IMMUNOCOMPROMISED_RATE: 5,
     POPULATION_SIZE: 50,
-    DAY: 0
+    DAY: 0,
+    GAME_STARTED: false
 };
 
 export function initUIListeners(scene, highlightLayer) {

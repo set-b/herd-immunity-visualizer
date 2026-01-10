@@ -12,5 +12,8 @@ export function reset() { // triggered by UISTATE.RESET in event listener in uiS
         }
     }
 
+    const endSimulationText = document.getElementById('simulation-ended');
+    endSimulationText.style.display = 'none';
+
     pawnArrayState.PAWN_ARRAY = null
 }

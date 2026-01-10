@@ -48,26 +48,45 @@ export async function createScene(engine, canvas, audioManager){
     // where to get pawnArray?
     scene.onBeforeRenderObservable.add(() => {
 
-        // const exposed_counter = parseInt(document.getElementById('exposed-count').textContent);
-        // const symptomatic_counter = parseInt(document.getElementById('symptomatic-count').textContent);
+        const exposed_counter = parseInt(document.getElementById('exposed-count').textContent);
+        const symptomatic_counter = parseInt(document.getElementById('symptomatic-count').textContent);
 
         if (UISTATE.PAUSE || pawnArrayState.PAWN_ARRAY === null) return;
        
         const now = performance.now();
         const timeDelay = 5000 / UISTATE.SPEED;
-        // let pandemicUnderway = (exposed_counter > 0 || 
-            // symptomatic_counter > 0);
+        let pandemicUnderway = (exposed_counter > 0 || 
+            symptomatic_counter > 0) && UISTATE.DAY > 0;
+        
+        // if (now - lastTurnTime > timeDelay) {  
+        // if (now - lastTurnTime > timeDelay &&
+        //     pandemicUnderway
+        // ){
+        //     executeTurn(pawnArrayState.PAWN_ARRAY);
+        //     lastTurnTime = now;
+        // }
+        // else if (UISTATE.DAY > 0){
 
-        if (now - lastTurnTime > timeDelay) {  
-            // && pandemicUnderway){
+        //     const dead_counter = parseInt(document.getElementById('dead-count').textContent);
+        //     const resistant_counter = parseInt(document.getElementById('resistant-count').textContent);
+
+        //     if (dead_counter > 0 || resistant_counter > 0) {
+        //         const endSimulationText = document.getElementById('simulation-ended');
+        //         endSimulationText.style.display = 'block';
+        //     } 
+        // //     UISTATE.PAUSE = true;
+        // }
+
+        if (now - lastTurnTime > timeDelay) {
+            if (pandemicUnderway) {
             executeTurn(pawnArrayState.PAWN_ARRAY);
             lastTurnTime = now;
+        } else if (UISTATE.GAME_STARTED) {
+        // Game started but no more infected = pandemic over
+                document.getElementById('simulation-ended').style.display = 'block';
+                UISTATE.PAUSE = true;
+            }
         }
-        // else {
-        //     const endSimulationText = document.getElementById('simulation-ended');
-        //     endSimulationText.style.display = 'block';
-        //     UISTATE.PAUSE = true;
-        // }
     });
 
     return scene;
